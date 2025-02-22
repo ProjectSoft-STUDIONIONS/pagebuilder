@@ -575,7 +575,22 @@
                         };
                     }
 
-                    window.open(opts.browser + '?type=' + type + '&field_id=' + $element[0].id + '&popup=1&relative_url=1', 'FileManager', params);
+                    /*
+                     * Дружим открытие окна с расположением файла
+                     */
+                    let dir = "";
+                    if($element.length){
+                        // Убираем из пути assets
+                        let value = $element[0].value.replace(/assets\//g, "");
+                        // Параметр для window.open
+                        let param = value.replace(/^(.+?\/)((\.\.\/)?[^\/]+)$/, '$1');
+                        if(param){
+                            dir += "&dir=" + param;
+                        }
+                    }
+
+                    // Добавляем полученный параметр dir
+                    window.open(opts.browser + '?type=' + type + '&popup=1&relative_url=1&field_id=' + $element[0].id  + dir, 'FileManager', params);
                 },
 
                 groupUpdated: function($list) {
