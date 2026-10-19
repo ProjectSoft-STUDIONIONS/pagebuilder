@@ -1,0 +1,35 @@
+name: Build and Release PageBuilder
+
+on:
+  release:
+    types: [ published ]
+
+jobs:
+  create-and-publish-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # Подготовка структуры pagebuilder/assets, pagebuilder/install, pagebuilder/manager
+      - name: Prepare pagebuilder folder structure
+        run: |
+          mkdir -p pagebuilder/assets pagebuilder/install pagebuilder/manager
+
+          # Копируем только если папка существует (защита от падения пайплайна)
+          if [ -d assets ]; then cp -r assets/* pagebuilder/assets/ 2>/dev/null || true; fi
+          if [ -d install ]; then cp -r install/* pagebuilder/install/ 2>/dev/null || true; fi
+          if [ -d manager ]; then cp -r manager/* pagebuilder/manager/ 2>/dev/null || true; fi
+
+      # Создаём ZIP
+      - name: Create ZIP archive
+        run: zip -r pagebuilder.zip pagebuilder/
+
+      # Загружаем бинарник в релиз
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: pagebuilder.zip
+          tag: ${{ github.ref_name }}
+          overwrite: false
